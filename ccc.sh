@@ -23,7 +23,7 @@ logfood() {
 
   if [ "$found" == '1' ]; then
     sqlite3 ccc.db "insert into diary values(\"${a[0]}\", \"${a[1]}\", \"$dt\");"
-    echo "Logged ${a[1]} units of $food."
+    echo "Logged ${a[1]} unit(s) of $food."
   else
     echo "Food $food wasn't found. Add this food (-a) first."
   fi
