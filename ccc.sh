@@ -38,9 +38,10 @@ weight() {
 }
 
 today() {
+  d=$(date -d "today" '+%Y-%m-%d')
   q=($(sqlite3 ccc.db "select diary.food, foods.cal * diary.amt \
     from diary left join foods on foods.food=diary.food \
-    where diary.dt>=datetime('now', 'localtime', '-1 day');"))
+    where diary.dt>=\"$d\";"))
 
   printf "\n%-9s| %-10s\n---------|----------\n" "Calories" "Food"
   IFS='|'; for n in "${q[@]}"; do
@@ -50,7 +51,7 @@ today() {
 
   s=($(sqlite3 ccc.db "select sum(foods.cal * diary.amt)
     from diary left join foods on foods.food=diary.food \
-    where diary.dt>=datetime('now', 'localtime', '-1 day');"))
+    where diary.dt>=\"$d\";"))
   printf "\nTotal calories today: %s\n" $s
 }
 
