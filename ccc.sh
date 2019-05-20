@@ -49,9 +49,7 @@ today() {
     printf "%-9s| %s\n" ${n[1]} ${n[0]}
   done
 
-  s=($(sqlite3 ccc.db "select sum(foods.cal * diary.amt)
-    from diary left join foods on foods.food=diary.food \
-    where diary.dt>=\"$d\";"))
+  s=$(printf '%s\n' "${q[@]}" | awk 'BEGIN {FS = "|"} ; {sum+=$2} END {print sum}')
   printf "\nTotal calories today: %s\n" $s
 }
 
