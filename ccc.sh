@@ -55,13 +55,34 @@ today() {
   printf "\nTotal calories today: %s\n" $s
 }
 
-while getopts 'a:q:l:w:tp' flag; do
+yesterday() {
+  y=$(date -d "yesterday" '+%Y-%m-%d')
+  d=$(date -d "today" '+%Y-%m-%d')
+  q=($(sqlite3 ccc.db "select diary.food, foods.cal * diary.amt \
+    from diary left join foods on foods.food=diary.food \
+    where diary.dt>=\"$y\" and diary.dt<\"$d\";"))
+
+  printf "\n%-9s| %-10s\n---------|----------\n" "Calories" "Food"
+  IFS='|'; for n in "${q[@]}"; do
+    n=($n)
+    printf "%-9s| %s\n" ${n[1]} ${n[0]}
+  done
+
+  s=($(sqlite3 ccc.db "select sum(foods.cal * diary.amt)
+    from diary left join foods on foods.food=diary.food \
+    where diary.dt>=\"$y\" and diary.dt<\"$d\";"))
+
+  printf "\nTotal calories yesterday: %s\n" $s
+}
+
+while getopts 'a:q:l:w:typ' flag; do
   case "${flag}" in
     l) logfood $OPTARG ;;
     a) addfood $OPTARG ;;
     q) queryfood $OPTARG ;;
     p) popfood ;;
     t) today ;;
+    y) yesterday ;;
     w) weight $OPTARG ;;
   esac
 done
