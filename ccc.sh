@@ -35,6 +35,7 @@ weight() {
                   where not exists (select 1 from weight where date = \"$d\");"
 
   sqlite3 ccc.db "update weight set amt = \"$1\" where date = \"$d\";"
+  echo "Logged weight as $1 on $d."
 }
 
 today() {
