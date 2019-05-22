@@ -1,8 +1,12 @@
 addfood() {
-  IFS=','; a=($1)
-  sqlite3 ccc.db "delete from foods where food=\"${a[0]}\";"
-  sqlite3 ccc.db "insert into foods values(\"${a[0]}\", \"${a[1]}\");"
-  echo "Added (or updated) food ${a[0]} with ${a[1]} calories per unit."
+  if [[ ! $1 =~ ^[a-zA-Z_]+\,[0-9]+(\.[0-9]+)?$ ]]; then
+    reject_formatting
+  else
+    IFS=','; a=($1)
+    sqlite3 ccc.db "delete from foods where food=\"${a[0]}\";"
+    sqlite3 ccc.db "insert into foods values(\"${a[0]}\", \"${a[1]}\");"
+    echo "Added (or updated) food ${a[0]} with ${a[1]} calories per unit."
+  fi
 }
 
 queryfood() {
@@ -15,17 +19,25 @@ popfood() {
   echo "Deleted most recent entry in food diary."
 }
 
-logfood() {
-  IFS=','; a=($1)
-  dt=$(date +%F' '%T)
-  food=${a[0]}
-  found=$(sqlite3 ccc.db "select 1 from foods where food=\"$food\";")
+reject_formatting() {
+  echo "Incorrectly formatted parameter. Please use the format 'food_name,amount' e.g. 'apple,125'."
+}
 
-  if [ "$found" == '1' ]; then
-    sqlite3 ccc.db "insert into diary values(\"${a[0]}\", \"${a[1]}\", \"$dt\");"
-    echo "Logged ${a[1]} unit(s) of $food."
+logfood() {
+  if [[ ! $1 =~ ^[a-zA-Z_]+\,[0-9]+(\.[0-9]+)?$ ]]; then
+    reject_formatting
   else
-    echo "Food $food wasn't found. Add this food (-a) first."
+    IFS=','; a=($1)
+    dt=$(date +%F' '%T)
+    food=${a[0]}
+    found=$(sqlite3 ccc.db "select 1 from foods where food=\"$food\";")
+
+    if [ "$found" == '1' ]; then
+      sqlite3 ccc.db "insert into diary values(\"${a[0]}\", \"${a[1]}\", \"$dt\");"
+      echo "Logged ${a[1]} unit(s) of $food."
+    else
+      echo "Food $food wasn't found. Add this food (-a) first."
+    fi
   fi
 }
 
