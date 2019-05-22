@@ -1,6 +1,6 @@
 addfood() {
   if [[ ! $1 =~ ^[a-zA-Z_]+\,[0-9]+(\.[0-9]+)?$ ]]; then
-    reject_formatting
+    echo "Incorrectly formatted parameter. Please use the format 'food_name,amount' e.g. 'apple,125'."
   else
     IFS=','; a=($1)
     sqlite3 ccc.db "delete from foods where food=\"${a[0]}\";"
@@ -10,8 +10,12 @@ addfood() {
 }
 
 queryfood() {
-  IFS='|'; data=($(sqlite3 ccc.db "select * from foods where food = \"$1\";"))
-  echo "${data[0]} - ${data[1]} calories per unit."
+  if [[ ! $1 =~ ^[a-zA-Z_]+\,[0-9]+(\.[0-9]+)?$ ]]; then
+    echo "Incorrectly formatted parameter. Please use the format 'food_name' with no spaces."
+  else
+    IFS='|'; data=($(sqlite3 ccc.db "select * from foods where food = \"$1\";"))
+    echo "${data[0]} - ${data[1]} calories per unit."
+  fi
 }
 
 popfood() {
@@ -19,13 +23,9 @@ popfood() {
   echo "Deleted most recent entry in food diary."
 }
 
-reject_formatting() {
-  echo "Incorrectly formatted parameter. Please use the format 'food_name,amount' e.g. 'apple,125'."
-}
-
 logfood() {
   if [[ ! $1 =~ ^[a-zA-Z_]+\,[0-9]+(\.[0-9]+)?$ ]]; then
-    reject_formatting
+    echo "Incorrectly formatted parameter. Please use the format 'food_name,amount' e.g. 'apple,125'."
   else
     IFS=','; a=($1)
     dt=$(date +%F' '%T)
@@ -42,12 +42,16 @@ logfood() {
 }
 
 weight() {
-  d=$(date -d "today" '+%Y-%m-%d')
-  sqlite3 ccc.db "insert into weight(amt, date) select \"$1\", \"$d\" \
-                  where not exists (select 1 from weight where date = \"$d\");"
+  if [[ ! $1 =~ ^[0-9]+(\.[0-9]+)?$ ]]; then
+    echo "Incorrectly formatted parameter. Weight must be a number (e.g. '170' or '144.3')."
+  else
+    d=$(date -d "today" '+%Y-%m-%d')
+    sqlite3 ccc.db "insert into weight(amt, date) select \"$1\", \"$d\" \
+                    where not exists (select 1 from weight where date = \"$d\");"
 
-  sqlite3 ccc.db "update weight set amt = \"$1\" where date = \"$d\";"
-  echo "Logged weight as $1 on $d."
+    sqlite3 ccc.db "update weight set amt = \"$1\" where date = \"$d\";"
+    echo "Logged weight as $1 on $d."
+  fi
 }
 
 today() {
