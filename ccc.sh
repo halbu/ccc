@@ -10,7 +10,7 @@ addfood() {
 }
 
 queryfood() {
-  if [[ ! $1 =~ ^[a-zA-Z_]+\,[0-9]+(\.[0-9]+)?$ ]]; then
+  if [[ ! $1 =~ ^[a-zA-Z_]+$ ]]; then
     echo "Incorrectly formatted parameter. Please use the format 'food_name' with no spaces."
   else
     IFS='|'; data=($(sqlite3 ccc.db "select * from foods where food = \"$1\";"))
@@ -70,6 +70,15 @@ today() {
   printf "\nTotal calories today: %s\n" $s
 }
 
+graphweight() {
+  q=($(sqlite3 ccc.db "select * from weight where date >= datetime('now', '-28 days');"))
+  w=$(echo "${q[*]}" | tr ' ' '\n' | awk 'BEGIN{FS="|"} {print $1}')
+  min=$(echo "${w[*]}" | awk 'BEGIN{a=999} {if ($1<0+a) a=$1} END{print a}')
+  max=$(echo "${w[*]}" | awk 'BEGIN{a=0  } {if ($1>0+a) a=$1} END{print a}')
+  echo min.. $min
+  echo max.. $max
+}
+
 yesterday() {
   y=$(date -d "yesterday" '+%Y-%m-%d')
   d=$(date -d "today" '+%Y-%m-%d')
@@ -90,7 +99,7 @@ yesterday() {
   printf "\nTotal calories yesterday: %s\n" $s
 }
 
-while getopts 'a:q:l:w:typ' flag; do
+while getopts 'a:q:l:w:typg' flag; do
   case "${flag}" in
     l) logfood $OPTARG ;;
     a) addfood $OPTARG ;;
@@ -99,5 +108,6 @@ while getopts 'a:q:l:w:typ' flag; do
     t) today ;;
     y) yesterday ;;
     w) weight $OPTARG ;;
+    g) graphweight ;;
   esac
 done
