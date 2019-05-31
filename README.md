@@ -34,6 +34,6 @@ Tired of the convenience of mobile calorie tracking apps? Sufficiently paranoid 
   
   ## Todo
   
-  - [ ] Input validation
+  - [x] Input validation
   - [ ] Macronutrient tracking
   - [ ] Graphical output of calories consumed over time, weight over time
